@@ -1,0 +1,109 @@
+## .NET / Visual Studio gitignore for the EAM Platform.
+## Get latest from `dotnet new gitignore`.
+
+# ── Local-only / secret config ───────────────────────────────────────────────
+# appsettings.json IS committed here on purpose: it holds non-secret placeholders
+# (AzureAd, Singpass/Mockpass, etc.) that document the config shape. Put real
+# secrets in user-secrets, environment variables, or these ignored files:
+.env
+.env.local
+secrets.json
+appsettings.Local.json
+appsettings.Secret.json
+appsettings.*.Local.json
+google-service-account.json
+*.pfx
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# CI/CD outputs (produced by scripts/ci/*.ps1)
+publish/
+artifact/
+reports/
+deploy-backup/
+
+# Visual Studio cache/options
+.vs/
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Test / coverage
+[Tt]est[Rr]esult*/
+TestResult.xml
+nunit-*.xml
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+
+# .NET restore artifacts
+project.lock.json
+project.fragment.lock.json
+*.nuget.props
+*.nuget.targets
+
+# NuGet packages
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+# Misc build junk
+*.binlog
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.tlog
+*.vspscc
+*.vssscc
+
+# JetBrains Rider / ReSharper
+.idea/
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# VS Code (keep shared settings)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# SQL Server files
+*.mdf
+*.ldf
+*.ndf
+
+# OS files
+.DS_Store
+Thumbs.db
+[Dd]esktop.ini
+*.swp
+
+# Node (if a SPA is added later)
+node_modules/

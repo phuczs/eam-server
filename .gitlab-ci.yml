@@ -1,0 +1,144 @@
+# ============================================================================
+# CI/CD for the EAM Platform (Educational Account Management System) backend.
+#
+# Environment: internal GitLab + Windows VM, GitLab Runner with executor = shell,
+# shell = pwsh, NO Docker/WSL/Linux. The deployable artifact is a traditional .zip
+# (not a Docker image). All real work lives in scripts/ci/*.ps1 so this file stays
+# stack-agnostic and the same steps run locally.
+#
+# Runner setup (config.toml):
+#   [[runners]]
+#     name = "windows-no-docker-runner"
+#     executor = "shell"
+#     shell = "pwsh"
+#   tags: windows, no-docker
+# Prerequisites on the VM: Git, .NET SDK 10, (SQL Server for the *staging* host).
+# ============================================================================
+
+stages:
+  - build
+  - test
+  - package
+  - deploy
+  - smoke
+
+variables:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  BUILD_CONFIGURATION: "Release"
+
+default:
+  tags:
+    - windows
+    - no-docker
+
+# ── Build ───────────────────────────────────────────────────────────────────
+build:
+  stage: build
+  script:
+    - .\scripts\ci\build.ps1 -Configuration $env:BUILD_CONFIGURATION
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - publish/
+
+# ── Test ────────────────────────────────────────────────────────────────────
+unit_tests:
+  stage: test
+  script:
+    - .\scripts\ci\unit-tests.ps1
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - reports/unit-tests.xml
+    paths:
+      - reports/
+
+# Integration tests boot the real pipeline under the Testing env — no external DB.
+# resource_group serialises them in case a future version needs a shared resource.
+integration_tests:
+  stage: test
+  resource_group: integration-environment
+  script:
+    - .\scripts\ci\prepare-integration.ps1
+    - .\scripts\ci\integration-tests.ps1
+  after_script:
+    - .\scripts\ci\cleanup-integration.ps1
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - reports/integration-tests.xml
+    paths:
+      - reports/
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - when: manual
+      allow_failure: false
+
+# ── Package (main only) ──────────────────────────────────────────────────────
+# Only produce a deployable artifact on the default branch. Feature branches stop
+# after build + tests, so they don't waste time zipping something we won't deploy.
+package:
+  stage: package
+  needs:
+    - build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  script:
+    - .\scripts\ci\package.ps1
+  artifacts:
+    expire_in: 30 days
+    paths:
+      - artifact/
+
+# ── Deploy: Azure App Service (zip deploy, no Docker) ─────────────────────────
+# Manual gate on `main`. Requires:
+#   - Azure CLI (`az`) on the runner.
+#   - CI/CD Variables: AZ_CLIENT_ID, AZ_CLIENT_SECRET (masked), AZ_TENANT_ID, AZ_RG, AZ_APP_NAME.
+#   - App Service "Application settings" set with runtime config (Jwt, ConnectionStrings,
+#     AzureAd, Singpass, Storage, Cors...) — appsettings.json placeholders are NOT secrets,
+#     so production values must come from environment / Key Vault.
+deploy_azure:
+  stage: deploy
+  needs:
+    - package
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: manual
+  script:
+    - .\scripts\ci\deploy-azure.ps1 -PackagePath "artifact\EAM.Api-$env:CI_COMMIT_SHORT_SHA.zip"
+  environment:
+    name: azure
+    # AZ_APP_HOSTNAME = full default hostname, e.g. eam-xxxx.southeastasia-01.azurewebsites.net
+    url: https://$AZ_APP_HOSTNAME
+
+# ── Smoke test against the deployed App Service (GET /health) ─────────────────
+smoke_test:
+  stage: smoke
+  needs:
+    - deploy_azure
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  script:
+    - .\scripts\ci\smoke-test.ps1 -BaseUrl "https://$env:AZ_APP_HOSTNAME"
+
+# ── (Alternative) On-prem IIS deploy — kept for reference; use instead of deploy_azure
+# deploy_staging:
+#   stage: deploy
+#   needs: [package]
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+#       when: manual
+#   script:
+#     - .\scripts\ci\deploy-staging.ps1 -PackagePath "artifact\EAM.Api-$env:CI_COMMIT_SHORT_SHA.zip"
+#   environment:
+#     name: staging
+#     url: $STAGING_BASE_URL
+
+# # ── Nightly integration run (optional) ──────────────────────────────────────
+# # Create a Pipeline Schedule (CI/CD → Schedules) to exercise integration tests
+# # every night; the integration_tests rule above already allows `schedule`.

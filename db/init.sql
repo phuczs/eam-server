@@ -1,0 +1,15 @@
+-- ============================================================================
+-- EAM Platform (Educational Account Management System) — database bootstrap.
+--
+-- PLACEHOLDER. The schema is owned by EF Core migrations:
+--   src/EAM.Infrastructure/Migrations  (empty until the first entity is added)
+--
+-- Use this file only for things that genuinely cannot be expressed as an EF
+-- migration (e.g. server-level setup, a login/role grant, or a one-off manual
+-- backfill on an existing environment).
+-- ============================================================================
+
+-- Example (commented):
+-- IF DB_ID('EamDb') IS NULL
+--     CREATE DATABASE [EamDb];
+-- GO
