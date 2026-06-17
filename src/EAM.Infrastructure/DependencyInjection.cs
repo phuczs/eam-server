@@ -1,18 +1,26 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using EAM.Application.Interfaces;
 using EAM.Application.Interfaces.Infrastructures;
+using EAM.Application.Interfaces.Repositories;
 using EAM.Application.Interfaces.Services;
 using EAM.Application.Options;
 using EAM.Application.Services;
+using EAM.Infrastructure.Auth;
 using EAM.Infrastructure.Caching;
 using EAM.Infrastructure.Email;
 using EAM.Infrastructure.Helper;
 using EAM.Infrastructure.Logging;
 using EAM.Infrastructure.Persistence;
+using EAM.Infrastructure.Persistence.Repository;
+using EAM.Infrastructure.Repositories;
 using EAM.Infrastructure.Security;
 using EAM.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
+using System.Text;
 
 namespace EAM.Infrastructure;
 
@@ -27,6 +35,11 @@ public static class DependencyInjection
     {
         // ── Options ──
         services.Configure<AzureAdOptions>(config.GetSection(AzureAdOptions.SectionName));
+        services.AddOptions<JwtOptions>()
+            .Bind(config.GetSection(JwtOptions.SectionName))
+            .Validate(o => !string.IsNullOrWhiteSpace(o.SigningKey), "Jwt:SigningKey is required.")
+            .Validate(o => Encoding.UTF8.GetByteCount(o.SigningKey) >= 32, "Jwt:SigningKey must be at least 32 bytes for HMAC-SHA256.")
+            .ValidateOnStart();
         services.Configure<SingpassOptions>(config.GetSection(SingpassOptions.SectionName));
         services.Configure<BlobStorageOptions>(config.GetSection(BlobStorageOptions.SectionName));
         services.Configure<GmailOptions>(config.GetSection(GmailOptions.SectionName));
@@ -70,12 +83,35 @@ public static class DependencyInjection
         //   services.AddScoped<IEmailSender, GmailEmailSender>();
         services.AddScoped<IEmailSender, LoggingEmailSender>();
         services.AddScoped<IEmailService, EmailService>();
+
         // Background dispatch alternative (requires a configured Hangfire job store):
         //   services.AddScoped<EmailService>();
         //   services.AddScoped<IEmailService, HangfireEmailService>();
 
         // ── Auditing ──
         services.AddScoped<IAuditWriter, AuditWriter>();
+
+
+        // ── Repositories ──
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IAuditRepository, AuditRepository>();
+		services.AddScoped<IExternalIdentityRepository, ExternalIdentityRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        // ── Auth: JWT issuance + Singpass OIDC ──
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IAzureAdOidcService>(sp => new AzureAdOidcService(
+            sp.GetRequiredService<IOptions<AzureAdOptions>>(),
+            new HttpClient(),
+            sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
+            sp.GetRequiredService<ILogger<AzureAdOidcService>>()));
+        services.AddSingleton<IRpKeyStore, EphemeralRpKeyStore>();
+        services.AddScoped<ISingpassOidcService>(sp => new SingpassOidcService(
+            sp.GetRequiredService<IOptions<SingpassOptions>>(),
+            new HttpClient(),
+            sp.GetRequiredService<IRpKeyStore>(),
+            sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
+            sp.GetRequiredService<ILogger<SingpassOidcService>>()));
 
         return services;
     }

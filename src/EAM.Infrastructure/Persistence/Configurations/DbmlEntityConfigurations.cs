@@ -511,3 +511,25 @@ internal sealed class AuditLogConfig : IEntityTypeConfiguration<AuditLog>
             .OnDelete(DeleteBehavior.NoAction);
     }
 }
+internal sealed class UserBankAccountConfig : IEntityTypeConfiguration<UserBankAccount>
+{
+    public void Configure(EntityTypeBuilder<UserBankAccount> builder)
+    {
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.BankCode).HasMaxLength(50).IsRequired();
+        builder.Property(x => x.BankName).HasMaxLength(255).IsRequired();
+        builder.Property(x => x.EncryptedAccountNumber).HasMaxLength(1000).IsRequired();
+        builder.Property(x => x.Last4).HasMaxLength(4).IsRequired();
+        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()").IsRequired();
+        builder.Property(x => x.UpdatedAt).HasDefaultValueSql("SYSUTCDATETIME()").IsRequired();
+
+        builder.HasIndex(x => x.UserId).HasDatabaseName("IX_user_bank_accounts_user_id");
+        builder.HasIndex(x => x.IsPrimary).HasDatabaseName("IX_user_bank_accounts_is_primary");
+
+        builder.HasOne<User>()
+            .WithMany(u => u.BankAccounts)
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}

@@ -29,7 +29,12 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
         var jwtSection = configuration.GetSection("Jwt");
-        var signingKey = jwtSection["SigningKey"] ?? throw new InvalidOperationException("Jwt:SigningKey is required.");
+        var signingKey = jwtSection["SigningKey"];
+        if (string.IsNullOrWhiteSpace(signingKey))
+            throw new InvalidOperationException("Jwt:SigningKey is required.");
+
+        if (Encoding.UTF8.GetByteCount(signingKey) < 32)
+            throw new InvalidOperationException("Jwt:SigningKey must be at least 32 bytes for HMAC-SHA256.");
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>

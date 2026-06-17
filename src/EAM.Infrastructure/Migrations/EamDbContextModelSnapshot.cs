@@ -866,6 +866,12 @@ namespace EAM.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasDefaultValue("pending");
 
+                    b.Property<long?>("UserBankAccountId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid?>("UserBankAccountId1")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -889,6 +895,8 @@ namespace EAM.Infrastructure.Migrations
 
                     b.HasIndex("Status")
                         .HasDatabaseName("IX_payments_status");
+
+                    b.HasIndex("UserBankAccountId1");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("IX_payments_user_id");
@@ -1172,6 +1180,9 @@ namespace EAM.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasDefaultValue("unlinked");
 
+                    b.Property<bool>("IsExemptFromAutomatedRules")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Mobile")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -1217,6 +1228,62 @@ namespace EAM.Infrastructure.Migrations
                         .HasDatabaseName("IX_users_status");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("EAM.Domain.Entities.UserBankAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BankCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("EncryptedAccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Last4")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsPrimary")
+                        .HasDatabaseName("IX_user_bank_accounts_is_primary");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_user_bank_accounts_user_id");
+
+                    b.ToTable("UserBankAccount");
                 });
 
             modelBuilder.Entity("EAM.Domain.Entities.AccountTransaction", b =>
@@ -1395,6 +1462,10 @@ namespace EAM.Infrastructure.Migrations
                         .HasForeignKey("AccountTransactionId")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("EAM.Domain.Entities.UserBankAccount", "UserBankAccount")
+                        .WithMany()
+                        .HasForeignKey("UserBankAccountId1");
+
                     b.HasOne("EAM.Domain.Entities.User", "User")
                         .WithMany("Payments")
                         .HasForeignKey("UserId")
@@ -1404,6 +1475,8 @@ namespace EAM.Infrastructure.Migrations
                     b.Navigation("AccountTransaction");
 
                     b.Navigation("User");
+
+                    b.Navigation("UserBankAccount");
                 });
 
             modelBuilder.Entity("EAM.Domain.Entities.PaymentAllocation", b =>
@@ -1483,6 +1556,15 @@ namespace EAM.Infrastructure.Migrations
                     b.Navigation("AccountCreatedByUser");
                 });
 
+            modelBuilder.Entity("EAM.Domain.Entities.UserBankAccount", b =>
+                {
+                    b.HasOne("EAM.Domain.Entities.User", null)
+                        .WithMany("BankAccounts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EAM.Domain.Entities.AccountTransaction", b =>
                 {
                     b.Navigation("Payments");
@@ -1546,6 +1628,8 @@ namespace EAM.Infrastructure.Migrations
                     b.Navigation("AccountTransactions");
 
                     b.Navigation("AuditLogs");
+
+                    b.Navigation("BankAccounts");
 
                     b.Navigation("CourseEnrollments");
 

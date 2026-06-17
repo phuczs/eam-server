@@ -1,12 +1,14 @@
 namespace EAM.Application.DTOs.Users.Request;
 
-public record UpdateUserRequest(
-    string? FullName,
-    string? Email,
-    string? Mobile,
-    DateOnly? DateOfBirth,
-    string? ResidentialAddress,
-    string? Status,
-    string? IdentityLinkStatus,
-    string? AccountStatus,
-    string? AccountClosureReason);
+public class UpdateUserRequestDto
+{
+    public string? FullName { get; set; }
+    public string? Mobile { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
+    public string? ResidentialAddress { get; set; }
+
+    public string? Role { get; set; }
+    public string? Status { get; set; }
+    public string? IdentityLinkStatus { get; set; }
+    public string? AccountStatus { get; set; }
+}

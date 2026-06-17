@@ -19,5 +19,10 @@ public interface IAuthService
     /// Completes an external sign-in. <paramref name="provider"/> is e.g. "AzureAd" or "Singpass";
     /// <paramref name="authorizationCode"/> is the code returned by the provider's redirect.
     /// </summary>
-    Task<AuthResult> ExternalLoginAsync(string provider, string authorizationCode, CancellationToken ct = default);
+    Task<AuthResult> ExternalLoginAsync(
+        string provider,
+        string authorizationCode,
+        string state,
+        string sessionId,
+        CancellationToken ct = default);
 }

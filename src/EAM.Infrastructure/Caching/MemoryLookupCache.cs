@@ -21,7 +21,7 @@ public class MemoryLookupCache : ILookupCache
         var newTask = factory();
 
         var options = new MemoryCacheEntryOptions().SetAbsoluteExpiration(ttl);
-        _cache.Set(key, newTask, options);
+        await _cache.Set(key, newTask, options);
 
         try
         {

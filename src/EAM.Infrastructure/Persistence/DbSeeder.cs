@@ -63,7 +63,7 @@ public static class DbSeeder
                 Id = Guid.Parse("30000000-0000-0000-0000-000000000002"),
                 UserId = learner.Id,
                 Provider = "singpass",
-                ProviderSubjectId = "seed-learner-singpass-subject",
+                ProviderSubjectId = "S1234567A",
                 CreatedAt = now
             });
 

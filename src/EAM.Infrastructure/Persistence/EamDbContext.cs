@@ -12,6 +12,7 @@ public class EamDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     public DbSet<AccountTransaction> AccountTransactions => Set<AccountTransaction>();
     public DbSet<TopupBatch> TopupBatches => Set<TopupBatch>();
     public DbSet<TopupItem> TopupItems => Set<TopupItem>();
@@ -27,6 +28,12 @@ public class EamDbContext : DbContext
     public DbSet<FasApplicationEvidence> FasApplicationEvidences => Set<FasApplicationEvidence>();
     public DbSet<FasAward> FasAwards => Set<FasAward>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
+
+    public override Task<int> SaveChangesAsync(CancellationToken ct = default)
+    {
+        return base.SaveChangesAsync(ct);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

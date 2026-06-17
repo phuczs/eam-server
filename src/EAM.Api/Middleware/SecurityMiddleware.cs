@@ -12,14 +12,14 @@ public class SecurityMiddleware
     // Endpoints that require management (admin) authority.
     private static readonly string[] AdminPrefixes =
     {
-        "/api/users",
-        "/api/topups",
-        "/api/courses",
-        "/api/billing",
-        "/api/invoices",
-        "/api/payments",
-        "/api/fas",
-        "/api/audit"
+        //"/api/users",
+        //"/api/topups",
+        //"/api/courses",
+        //"/api/billing",
+        //"/api/invoices",
+        //"/api/payments",
+        //"/api/fas",
+        //"/api/audit"
     };
 
     private static readonly string[] AdminRoles =

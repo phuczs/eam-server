@@ -26,6 +26,8 @@ public class Payment
 
     public DateTime? PaidAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public long? UserBankAccountId { get; set; }
+    public UserBankAccount? UserBankAccount { get; set; }
 
     public ICollection<PaymentAllocation> Allocations { get; set; } = [];
 }

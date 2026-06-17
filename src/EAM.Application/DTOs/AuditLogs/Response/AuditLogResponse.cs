@@ -1,16 +1,21 @@
-namespace EAM.Application.DTOs.AuditLogs.Response;
+namespace EAM.Application.DTOs.Audits;
 
-public record AuditLogResponse(
-    Guid Id,
-    Guid? ActorUserId,
-    string Action,
-    string EntityType,
-    Guid? EntityId,
-    string? OldValuesJson,
-    string? NewValuesJson,
-    string? MetadataJson,
-    string? IpAddress,
-    string? UserAgent,
-    string? RequestId,
-    string? CorrelationId,
-    DateTime CreatedAt);
+public class AuditLogResponse
+{
+    public Guid Id { get; set; }
+    public Guid? ActorUserId { get; set; }
+    public string Action { get; set; } = null!;
+    public string EntityType { get; set; } = null!;
+    public Guid? EntityId { get; set; }
+    public string? OldValuesJson { get; set; }
+    public string? NewValuesJson { get; set; }
+    public string? MetadataJson { get; set; }
+
+    public string? IpAddress { get; set; }
+    public string? UserAgent { get; set; }
+
+    public string? RequestId { get; set; }
+    public string? CorrelationId { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+}

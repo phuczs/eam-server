@@ -8,6 +8,7 @@
 .env
 .env.local
 secrets.json
+appsettings.json
 appsettings.Local.json
 appsettings.Secret.json
 appsettings.*.Local.json

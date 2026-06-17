@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using EAM.Api.Extensions;
 using EAM.Application;
 using EAM.Infrastructure;

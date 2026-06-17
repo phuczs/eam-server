@@ -27,7 +27,7 @@ public class User
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
-
+    public bool IsExemptFromAutomatedRules { get; set; } = false;
     public ICollection<User> CreatedAccounts { get; set; } = [];
     public ICollection<ExternalIdentity> ExternalIdentities { get; set; } = [];
     public ICollection<RefreshToken> RefreshTokens { get; set; } = [];
@@ -42,4 +42,5 @@ public class User
     public ICollection<FasScheme> CreatedFasSchemes { get; set; } = [];
     public ICollection<FasApplication> ReviewedFasApplications { get; set; } = [];
     public ICollection<AuditLog> AuditLogs { get; set; } = [];
+    public ICollection<UserBankAccount> BankAccounts { get; set; } = [];
 }
