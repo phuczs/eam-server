@@ -18,6 +18,7 @@ public class UserProfileResponse
     public string? Email { get; set; }
     public string? Mobile { get; set; }
     public string? ResidentialAddress { get; set; }
+    public decimal CurrentBalance { get; set; }
 
     public string AccountStatus { get; set; } = null!;
     public string IdentityLinkStatus { get; set; } = null!;

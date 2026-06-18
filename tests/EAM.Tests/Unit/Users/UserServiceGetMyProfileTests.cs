@@ -60,6 +60,7 @@ public class UserServiceGetMyProfileTests
             Mobile              = "+6591234567",
             DateOfBirth         = new DateOnly(1990, 5, 15),
             ResidentialAddress  = "1 Marina Boulevard, Singapore 018989",
+            CurrentBalance      = 1250.50m,
             AccountStatus       = "active",
             IdentityLinkStatus  = "linked",
             AccountActivatedAt  = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
@@ -79,6 +80,7 @@ public class UserServiceGetMyProfileTests
         result.Mobile.Should().Be("+6591234567");
         result.DateOfBirth.Should().Be(new DateOnly(1990, 5, 15));
         result.ResidentialAddress.Should().Be("1 Marina Boulevard, Singapore 018989");
+        result.CurrentBalance.Should().Be(1250.50m);
         result.AccountStatus.Should().Be("active");
         result.IdentityLinkStatus.Should().Be("linked");
         result.AccountActivatedAt.Should().Be(new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc));
@@ -130,21 +132,19 @@ public class UserServiceGetMyProfileTests
     }
 
     [Fact]
-    public async Task GetMyProfileAsync_does_not_expose_balance_or_financial_data()
+    public async Task GetMyProfileAsync_does_not_expose_bank_accounts()
     {
-        // Arrange — user has a non-zero balance; it must NOT appear in the profile DTO
+        // Arrange — user has bank accounts; it must NOT appear in the profile DTO
         var userId = Guid.NewGuid();
-        var user = new User { Id = userId, CurrentBalance = 9_999.99m, AccountStatus = "active", IdentityLinkStatus = "linked" };
+        var user = new User { Id = userId, AccountStatus = "active", IdentityLinkStatus = "linked" };
 
         _userRepo.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
 
         // Act
         var result = await BuildSut().GetMyProfileAsync(userId);
 
-        // Assert — UserProfileResponse has no financial fields at all
+        // Assert — UserProfileResponse has no bank account fields
         var responseType = typeof(UserProfileResponse);
-        responseType.GetProperty("CurrentBalance").Should().BeNull(
-            because: "financial data must not be exposed on the self-profile DTO");
         responseType.GetProperty("BankAccounts").Should().BeNull(
             because: "bank account data must not be exposed on the self-profile DTO");
     }

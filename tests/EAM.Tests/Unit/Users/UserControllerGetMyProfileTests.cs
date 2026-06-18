@@ -42,6 +42,7 @@ public class UserControllerGetMyProfileTests
         FullName           = "Jane Doe",
         Email              = "jane@example.com",
         Mobile             = "+6591234567",
+        CurrentBalance     = 100.50m,
         AccountStatus      = "active",
         IdentityLinkStatus = "linked",
         CreatedAt          = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
@@ -72,6 +73,7 @@ public class UserControllerGetMyProfileTests
         body.Data!.Id.Should().Be(userId);
         body.Data.OfficialId.Should().Be("S1234567A");
         body.Data.FullName.Should().Be("Jane Doe");
+        body.Data.CurrentBalance.Should().Be(100.50m);
     }
 
     [Fact]
